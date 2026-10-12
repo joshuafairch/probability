@@ -1,0 +1,13 @@
+# shared
+.vscode
+
+# python
+.venv
+*.log
+
+# latex
+*.aux
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
