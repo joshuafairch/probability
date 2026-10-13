@@ -67,45 +67,56 @@ def main():
     trial_record = np.asarray(trial_record,int)
 
     # setup trial index for later x-axis plotting
-    trial_index = np.linspace(0,max(trial_record),max(trial_record))
+    trial_index = np.linspace(0,max(trial_record),max(trial_record)+1)
 
     # ---
     # postprocess
     # ---
 
     # num_first_success:
-    #   index = number of attempts to first hit
+    #   index = number of attempts to first hit (note no offset -> index = #)
     #   value = number of occurrences of index
-    num_first_success = np.zeros(max(trial_record))
+    num_first_success = np.zeros(max(trial_record)+1)
 
-    for trial in range(0,max(trial_record)):
+    for trial in range(0,max(trial_record)+1):
         num_first_success[trial] = trial_record.tolist().count(trial)
 
     # print(num_first_success)
+    # above should always:
+    #   num_first_success[0] == 0
+    #   num_first_success[-1] > 0
 
     # total (cumulative) chance of first hit
-    cumulative_chance = np.zeros(max(trial_record))
-    for trial in range(1,max(trial_record)):
+    cumulative_cases = np.zeros(max(trial_record)+1)
+    for trial in range(1,max(trial_record)+1):
         # start from 1 for sum
         # holds since num_first_success[0] == 0 always true
-        cumulative_chance[trial] = sum([num_first_success[i] for i in range(1,trial)])/cases*100
+        cumulative_cases[trial] = cumulative_cases[trial-1] + num_first_success[trial]
+    cumulative_chance = cumulative_cases/cases*100
 
     # print(cumulative_chance)
+    # above should always:
+    #   cumulative_chance[0] == 0
+    #   cumulative_chance[-1] == 100 (which is not logically true)
 
     # ---
     # shifted geometric distribution functions
     # ---
 
-    pmf = np.zeros(max(trial_record))
-    cdf = np.zeros(max(trial_record))
+    pmf = np.zeros(max(trial_record)+1)
+    cdf = np.zeros(max(trial_record)+1)
 
-    for trial in range(1,max(trial_record)):
+    for trial in range(1,max(trial_record)+1):
 
         # probability mass function
         pmf[trial] = (1-freq)**(trial-1)*freq
         
         # cumulative distribution function
         cdf[trial] = 1-(1-freq)**trial
+
+    # adjust bounds
+    pmf[0] = np.nan     # pmf only valid for trial >=1
+    cdf[0] = 0          # cdf = 0 for trial < 1
 
     # print((pmf))
     # print((cdf))
@@ -119,11 +130,11 @@ def main():
     # probability distribution
     ax11.bar(trial_index,num_first_success)
     ax12 = ax11.twinx()
-    ax12.plot(trial_index,pmf,'red')
+    ax12.plot(trial_index[1:],pmf[1:],'red')
 
     ax11.grid(True)
     format_plot(ax11,'Trials to First Success','Trials','Cases',0,max(trial_record),0,max(num_first_success))
-    format_plot(ax12,None,None,'Probability Mass Function',None,None,0,max(pmf))
+    format_plot(ax12,None,None,'Probability Mass Function',None,None,0,max(pmf[1:]))
 
     # percent chance
     ax21.bar(trial_index,cumulative_chance)
@@ -143,7 +154,7 @@ if __name__ == '__main__':
     freq = 1/10
 
     # number of independent cases
-    cases = 100
+    cases = 10000
     
     # max number of trials per case
     # recommend trial_max >> 1/freq
