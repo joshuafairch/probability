@@ -1,0 +1,19 @@
+# set default end-of-line (eol) to lf, allow git to guess text/binary
+*   text=auto
+
+# specify diff handling for common author files
+*.md    text diff=markdown
+*.py    text diff=python
+*.tex   text diff=tex
+
+*.sh            text eol=lf diff=bash
+*.bashrc        text eol=lf diff=bash
+*.bash_profile  text eol=lf diff=bash
+
+# set image files as binary (text + diff)
+*.png   binary
+*.jpg   binary
+*.gif   binary
+
+# remove eol normalization
+*.pdf   -text
